@@ -65,9 +65,9 @@ class ChemModel(object):
         config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
         self.graph = tf.Graph()
-        self.sess = tf.Session(graph=self.graph, config=config)
+        self.sess = tf.compat.v1.Session(graph=self.graph, config=config)
         with self.graph.as_default():
-            tf.set_random_seed(params['random_seed'])
+            tf.random.set_seed(params['random_seed'])
             self.placeholders = {}
             self.weights = {}
             self.ops = {}
@@ -111,12 +111,12 @@ class ChemModel(object):
         raise Exception("Models have to implement process_raw_graphs!")
 
     def make_model(self):
-        self.placeholders['num_graphs'] = tf.placeholder(tf.int64, [], name='num_graphs')
-        self.placeholders['out_layer_dropout_keep_prob'] = tf.placeholder(tf.float32, [], name='out_layer_dropout_keep_prob')
+        self.placeholders['num_graphs'] = tf.compat.v1.placeholder(tf.int64, [], name='num_graphs')
+        self.placeholders['out_layer_dropout_keep_prob'] = tf.compat.v1.placeholder(tf.float32, [], name='out_layer_dropout_keep_prob')
         # whether this session is for generating new graphs or not
-        self.placeholders['is_generative'] = tf.placeholder(tf.bool, [], name='is_generative')
+        self.placeholders['is_generative'] = tf.compat.v1.placeholder(tf.bool, [], name='is_generative')
 
-        with tf.variable_scope("graph_model"):
+        with tf.compat.v1.variable_scope("graph_model"):
             self.prepare_specific_graph_model()
 
             # Initial state: embedding

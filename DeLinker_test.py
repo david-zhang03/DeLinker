@@ -120,69 +120,69 @@ class DenseGGNNChemModel(ChemModel):
         h_dim = self.params['hidden_size'] 
         out_dim = self.params['encoding_size']
         expanded_h_dim=self.params['hidden_size']+self.params['hidden_size'] + 1 # 1 for focus bit
-        self.placeholders['graph_state_keep_prob'] = tf.placeholder(tf.float32, None, name='graph_state_keep_prob')
-        self.placeholders['edge_weight_dropout_keep_prob'] = tf.placeholder(tf.float32, None, name='edge_weight_dropout_keep_prob')
+        self.placeholders['graph_state_keep_prob'] = tf.compat.v1.placeholder(tf.float32, None, name='graph_state_keep_prob')
+        self.placeholders['edge_weight_dropout_keep_prob'] = tf.compat.v1.placeholder(tf.float32, None, name='edge_weight_dropout_keep_prob')
         # initial graph representation 
-        self.placeholders['initial_node_representation_in'] = tf.placeholder(tf.float32,
+        self.placeholders['initial_node_representation_in'] = tf.compat.v1.placeholder(tf.float32,
                                                                           [None, None, self.params['hidden_size']],
                                                                           name='node_features_in')  # padded node symbols
-        self.placeholders['initial_node_representation_out'] = tf.placeholder(tf.float32,
+        self.placeholders['initial_node_representation_out'] = tf.compat.v1.placeholder(tf.float32,
                                                                           [None, None, self.params['hidden_size']],
                                                                           name='node_features_out')  # padded node symbols
         # mask out invalid node
-        self.placeholders['node_mask_in'] = tf.placeholder(tf.float32, [None, None], name='node_mask_in') # [b, v]
-        self.placeholders['node_mask_out'] = tf.placeholder(tf.float32, [None, None], name='node_mask_out') # [b, v]
-        self.placeholders['num_vertices'] = tf.placeholder(tf.int32, ())
+        self.placeholders['node_mask_in'] = tf.compat.v1.placeholder(tf.float32, [None, None], name='node_mask_in') # [b, v]
+        self.placeholders['node_mask_out'] = tf.compat.v1.placeholder(tf.float32, [None, None], name='node_mask_out') # [b, v]
+        self.placeholders['num_vertices'] = tf.compat.v1.placeholder(tf.int32, ())
         # vertices to keep edges between
-        self.placeholders['vertices_to_keep'] = tf.placeholder(tf.float32, [None, None], name='vertices_to_keep') # [b, v]
+        self.placeholders['vertices_to_keep'] = tf.compat.v1.placeholder(tf.float32, [None, None], name='vertices_to_keep') # [b, v]
         # exit vectors 
-        self.placeholders['exit_points'] = tf.placeholder(tf.float32, [None, None], name='exit_points') # [b, 2]
+        self.placeholders['exit_points'] = tf.compat.v1.placeholder(tf.float32, [None, None], name='exit_points') # [b, 2]
         # structural informations - distance and angle between fragments
-        self.placeholders['abs_dist'] = tf.placeholder(tf.float32, [None, 2], name='abs_dist') # [b, 2]
+        self.placeholders['abs_dist'] = tf.compat.v1.placeholder(tf.float32, [None, 2], name='abs_dist') # [b, 2]
         # iteration number during generation
-        self.placeholders['it_num'] = tf.placeholder(tf.int32, [None], name='it_num') # [1]
+        self.placeholders['it_num'] = tf.compat.v1.placeholder(tf.int32, [None], name='it_num') # [1]
         # adj for encoder
-        self.placeholders['adjacency_matrix_in'] = tf.placeholder(tf.float32,
+        self.placeholders['adjacency_matrix_in'] = tf.compat.v1.placeholder(tf.float32,
                                                     [None, self.num_edge_types, None, None], name="adjacency_matrix_in")     # [b, e, v, v]
-        self.placeholders['adjacency_matrix_out'] = tf.placeholder(tf.float32,
+        self.placeholders['adjacency_matrix_out'] = tf.compat.v1.placeholder(tf.float32,
                                                     [None, self.num_edge_types, None, None], name="adjacency_matrix_out")     # [b, e, v, v]
 
         # labels for node symbol prediction
-        self.placeholders['node_symbols_in'] = tf.placeholder(tf.float32, [None, None, self.params['num_symbols']]) # [b, v, edge_type]
-        self.placeholders['node_symbols_out'] = tf.placeholder(tf.float32, [None, None, self.params['num_symbols']]) # [b, v, edge_type]
+        self.placeholders['node_symbols_in'] = tf.compat.v1.placeholder(tf.float32, [None, None, self.params['num_symbols']]) # [b, v, edge_type]
+        self.placeholders['node_symbols_out'] = tf.compat.v1.placeholder(tf.float32, [None, None, self.params['num_symbols']]) # [b, v, edge_type]
         # node symbols used to enhance latent representations
-        self.placeholders['latent_node_symbols_in'] = tf.placeholder(tf.float32, 
+        self.placeholders['latent_node_symbols_in'] = tf.compat.v1.placeholder(tf.float32, 
                                                       [None, None, self.params['hidden_size']], name='latent_node_symbol_in') # [b, v, h]
-        self.placeholders['latent_node_symbols_out'] = tf.placeholder(tf.float32,
+        self.placeholders['latent_node_symbols_out'] = tf.compat.v1.placeholder(tf.float32,
                                                       [None, None, self.params['hidden_size']], name='latent_node_symbol_out') # [b, v, h]
 
         # mask out cross entropies in decoder
-        self.placeholders['iteration_mask_out']=tf.placeholder(tf.float32, [None, None]) # [b, es]
+        self.placeholders['iteration_mask_out']=tf.compat.v1.placeholder(tf.float32, [None, None]) # [b, es]
         # adj matrices used in decoder
-        self.placeholders['incre_adj_mat_out']=tf.placeholder(tf.float32, [None, None, self.num_edge_types, None, None], name='incre_adj_mat_out') # [b, es, e, v, v]
+        self.placeholders['incre_adj_mat_out']=tf.compat.v1.placeholder(tf.float32, [None, None, self.num_edge_types, None, None], name='incre_adj_mat_out') # [b, es, e, v, v]
         # distance 
-        self.placeholders['distance_to_others_out']=tf.placeholder(tf.int32, [None, None, None], name='distance_to_others_out') # [b, es, v]
+        self.placeholders['distance_to_others_out']=tf.compat.v1.placeholder(tf.int32, [None, None, None], name='distance_to_others_out') # [b, es, v]
         # maximum iteration number of this batch
-        self.placeholders['max_iteration_num']=tf.placeholder(tf.int32, [], name='max_iteration_num') # number
+        self.placeholders['max_iteration_num']=tf.compat.v1.placeholder(tf.int32, [], name='max_iteration_num') # number
         # node number in focus at each iteration step
-        self.placeholders['node_sequence_out']=tf.placeholder(tf.float32, [None, None, None], name='node_sequence_out') # [b, es, v]
+        self.placeholders['node_sequence_out']=tf.compat.v1.placeholder(tf.float32, [None, None, None], name='node_sequence_out') # [b, es, v]
         # mask out invalid edge types at each iteration step 
-        self.placeholders['edge_type_masks_out']=tf.placeholder(tf.float32, [None, None, self.num_edge_types, None], name='edge_type_masks_out') # [b, es, e, v]
+        self.placeholders['edge_type_masks_out']=tf.compat.v1.placeholder(tf.float32, [None, None, self.num_edge_types, None], name='edge_type_masks_out') # [b, es, e, v]
         # ground truth edge type labels at each iteration step 
-        self.placeholders['edge_type_labels_out']=tf.placeholder(tf.float32, [None, None, self.num_edge_types, None], name='edge_type_labels_out') # [b, es, e, v]
+        self.placeholders['edge_type_labels_out']=tf.compat.v1.placeholder(tf.float32, [None, None, self.num_edge_types, None], name='edge_type_labels_out') # [b, es, e, v]
         # mask out invalid edge at each iteration step 
-        self.placeholders['edge_masks_out']=tf.placeholder(tf.float32, [None, None, None], name='edge_masks_out') # [b, es, v]
+        self.placeholders['edge_masks_out']=tf.compat.v1.placeholder(tf.float32, [None, None, None], name='edge_masks_out') # [b, es, v]
         # ground truth edge labels at each iteration step 
-        self.placeholders['edge_labels_out']=tf.placeholder(tf.float32, [None, None, None], name='edge_labels_out') # [b, es, v]        
+        self.placeholders['edge_labels_out']=tf.compat.v1.placeholder(tf.float32, [None, None, None], name='edge_labels_out') # [b, es, v]        
         # ground truth labels for whether it stops at each iteration step
-        self.placeholders['local_stop_out']=tf.placeholder(tf.float32, [None, None], name='local_stop_out') # [b, es]
+        self.placeholders['local_stop_out']=tf.compat.v1.placeholder(tf.float32, [None, None], name='local_stop_out') # [b, es]
         # z_prior sampled from standard normal distribution
-        self.placeholders['z_prior']=tf.placeholder(tf.float32, [None, None, self.params['encoding_size']], name='z_prior') # prior z ~ normal distribution     - full molecule
-        self.placeholders['z_prior_in']=tf.placeholder(tf.float32, [None, None, self.params['hidden_size']], name='z_prior_in') # prior z ~ normal distribution - fragments
+        self.placeholders['z_prior']=tf.compat.v1.placeholder(tf.float32, [None, None, self.params['encoding_size']], name='z_prior') # prior z ~ normal distribution     - full molecule
+        self.placeholders['z_prior_in']=tf.compat.v1.placeholder(tf.float32, [None, None, self.params['hidden_size']], name='z_prior_in') # prior z ~ normal distribution - fragments
         # put in front of kl latent loss
-        self.placeholders['kl_trade_off_lambda']=tf.placeholder(tf.float32, [], name='kl_trade_off_lambda') # number
+        self.placeholders['kl_trade_off_lambda']=tf.compat.v1.placeholder(tf.float32, [], name='kl_trade_off_lambda') # number
         # overlapped edge features
-        self.placeholders['overlapped_edge_features_out']=tf.placeholder(tf.int32, [None, None, None], name='overlapped_edge_features_out') # [b, es, v]
+        self.placeholders['overlapped_edge_features_out']=tf.compat.v1.placeholder(tf.int32, [None, None, None], name='overlapped_edge_features_out') # [b, es, v]
 
         # weights for encoder and decoder GNN. 
         if self.params["residual_connection_on"]:
