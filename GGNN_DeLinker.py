@@ -62,7 +62,7 @@ class ChemModel(object):
         self.valid_data = self.load_data(params['valid_file'], is_training_data=False)
 
         # Build the actual model
-        config = tf.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
         self.graph = tf.Graph()
         self.sess = tf.Session(graph=self.graph, config=config)
