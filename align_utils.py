@@ -31,6 +31,9 @@ def align_mol_to_frags(smi_molecule, smi_linker, smi_frags):
             if len(set(list(f_match)+list(l_match))) == mol.GetNumHeavyAtoms():
                 break
         # Add frag indices
+        if len(linker_matches) == 0:
+            frag_match = frags_matches[0]
+            linker_match = linker_matches
         sub_idx += frag_match
         # Add linker indices to end
         sub_idx += [idx for num, idx in enumerate(linker_match) if linker.GetAtomWithIdx(num).GetAtomicNum() != 0 and idx not in sub_idx]
