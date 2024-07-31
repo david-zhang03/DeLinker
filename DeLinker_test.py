@@ -35,6 +35,10 @@ import os
 import time
 from data_augmentation import *
 
+tf.compat.v1.enable_eager_execution()
+
+print(tf.executing_eagerly())
+
 '''
 Comments provide the expected tensor shapes where helpful.
 
@@ -120,7 +124,8 @@ class DenseGGNNChemModel(ChemModel):
         h_dim = self.params['hidden_size'] 
         out_dim = self.params['encoding_size']
         expanded_h_dim=self.params['hidden_size']+self.params['hidden_size'] + 1 # 1 for focus bit
-        self.placeholders['graph_state_keep_prob'] = tf.compat.v1.placeholder(tf.float32, None, name='graph_state_keep_prob')
+        # self.placeholders['graph_state_keep_prob'] = tf.compat.v1.placeholder(tf.float32, None, name='graph_state_keep_prob')
+        self.placeholders['graph_state_keep_prob'] = tf.Variable(initial_value=0.0, dtype=tf.float32, name='graph_state_keep_prob')
         self.placeholders['edge_weight_dropout_keep_prob'] = tf.compat.v1.placeholder(tf.float32, None, name='edge_weight_dropout_keep_prob')
         # initial graph representation 
         self.placeholders['initial_node_representation_in'] = tf.compat.v1.placeholder(tf.float32,
@@ -184,6 +189,9 @@ class DenseGGNNChemModel(ChemModel):
         # overlapped edge features
         self.placeholders['overlapped_edge_features_out']=tf.compat.v1.placeholder(tf.int32, [None, None, None], name='overlapped_edge_features_out') # [b, es, v]
 
+        print(tf.executing_eagerly())
+        print(self.placeholders['graph_state_keep_prob'].numpy())
+
         # weights for encoder and decoder GNN. 
         if self.params["residual_connection_on"]:
             # weights for encoder and decoder GNN. Different weights for each iteration
@@ -193,14 +201,16 @@ class DenseGGNNChemModel(ChemModel):
                 else:
                     new_h_dim=expanded_h_dim
                 for iter_idx in range(self.params['num_timesteps']):
-                    with tf.variable_scope("gru_scope"+scope+str(iter_idx), reuse=False):
+                    with tf.compat.v1.variable_scope("gru_scope"+scope+str(iter_idx), reuse=False):
                         self.weights['edge_weights'+scope+str(iter_idx)] = tf.Variable(glorot_init([self.num_edge_types, new_h_dim, new_h_dim]))
                         if self.params['use_edge_bias']:
                             self.weights['edge_biases'+scope+str(iter_idx)] = tf.Variable(np.zeros([self.num_edge_types, 1, new_h_dim]).astype(np.float32))
                 
-                        cell = tf.contrib.rnn.GRUCell(new_h_dim)
-                        cell = tf.nn.rnn_cell.DropoutWrapper(cell,
-                                        state_keep_prob=self.placeholders['graph_state_keep_prob'])
+                        cell = tf.keras.layers.GRUCell(new_h_dim,
+                          recurrent_dropout=self.placeholders['graph_state_keep_prob'])
+                        # cell = tf.contrib.rnn.GRUCell(new_h_dim)
+                        # cell = tf.nn.rnn_cell.DropoutWrapper(cell,
+                        #                 state_keep_prob=self.placeholders['graph_state_keep_prob'])
                         self.weights['node_gru'+scope+str(iter_idx)] = cell
         else:
             for scope in ['_encoder', '_decoder']:
