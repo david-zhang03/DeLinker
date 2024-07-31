@@ -360,8 +360,11 @@ def compute_distance_and_angle(mol, smi_linker, smi_frags):
             l_match = [idx for num, idx in enumerate(linker_match) if linker.GetAtomWithIdx(num).GetAtomicNum() != 0 and idx not in f_match]
             if len(set(list(f_match)+list(l_match))) == mol.GetNumHeavyAtoms():
             #if len(set(list(frag_match)+list(linker_match))) == mol.GetNumHeavyAtoms():
-                break
+                break            
         # Add frag indices
+        if len(linker_matches) == 0:
+            frag_match = frags_matches[0]
+            linker_match = linker_matches
         sub_idx += frag_match
         # Add linker indices to end
         sub_idx += [idx for num, idx in enumerate(linker_match) if linker.GetAtomWithIdx(num).GetAtomicNum() != 0 and idx not in sub_idx]
